@@ -1,4 +1,5 @@
 import { getCategories, getPublishedPosts, isNotionConfigured } from '@/lib/notion';
+import { toISODate } from '@/lib/utils/date';
 import Shell from '@/components/ide/Shell';
 import PostRows from '@/components/ide/PostRows';
 
@@ -27,8 +28,7 @@ export default async function HomePage() {
       properties={[
         ['posts', String(posts.length)],
         ['categories', String(categories.length)],
-        ['source', 'notion'],
-        ['revalidate', '15m'],
+        ['updated', posts[0] ? toISODate(posts[0].date) : '-'],
       ]}
     >
       <div className="border-b border-rule px-4 py-6 md:px-6">

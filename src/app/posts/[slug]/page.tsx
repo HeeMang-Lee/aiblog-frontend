@@ -51,10 +51,15 @@ export default async function PostDetailPage({ params }: PageProps) {
   ]);
 
   const wordCount = markdown.trim() ? markdown.trim().split(/\s+/).length : 0;
+  // 한국어 성인 평균 묵독 속도는 분당 500~600자 근처다. 공백 기준 어절이
+  // 아니라 글자 수로 재야 한글에서 값이 맞는다.
+  const charCount = markdown.replace(/\s/g, '').length;
+  const readingMinutes = charCount ? Math.max(1, Math.round(charCount / 500)) : 0;
 
   return (
     <Shell
       tab={`${post.slug}.md`}
+      slug={post.slug}
       command={`cat posts/${post.slug}.md`}
       result={
         <>
@@ -67,6 +72,7 @@ export default async function PostDetailPage({ params }: PageProps) {
         ['category', post.category ?? '-'],
         ['date', toISODate(post.date) || '-'],
         ['tags', post.tags.length ? post.tags.join(', ') : '-'],
+        ['reading', readingMinutes ? `${readingMinutes} min` : '-'],
       ]}
     >
       <article className="px-4 py-8 md:px-6 md:py-10">

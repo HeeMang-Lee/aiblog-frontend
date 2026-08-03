@@ -13,6 +13,7 @@
     "@notionhq/client": "^5.23.3",
     "@tailwindcss/typography": "^0.5.19",
     "@types/three": "^0.185.3",
+    "@upstash/redis": "^1.38.1",
     "date-fns": "^4.1.0",
     "highlight.js": "^11.11.1",
     "lucide-react": "^1.28.0",

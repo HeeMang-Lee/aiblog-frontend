@@ -14,6 +14,7 @@ export default async function Shell({
   properties,
   command,
   result,
+  slug,
   children,
 }: {
   /** Filename shown in the tab strip. */
@@ -22,6 +23,8 @@ export default async function Shell({
   /** Command echoed in the terminal bar. */
   command: string;
   result: React.ReactNode;
+  /** Set on a post page so views are counted per slug. */
+  slug?: string;
   children: React.ReactNode;
 }) {
   const [posts, categories] = await Promise.all([
@@ -41,7 +44,7 @@ export default async function Shell({
               {children}
             </main>
           }
-          panel={<SidePanel properties={properties} />}
+          panel={<SidePanel properties={properties} slug={slug} />}
         />
 
         {/* Terminal bar */}

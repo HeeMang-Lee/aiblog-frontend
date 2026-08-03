@@ -14,9 +14,18 @@ const GlyphScene = dynamic(() => import('@/components/ide/GlyphScene'), {
   loading: () => null,
 });
 
+import VisitCounter from './VisitCounter';
+
 export type PropertyRow = [label: string, value: string];
 
-export default function SidePanel({ properties }: { properties: PropertyRow[] }) {
+export default function SidePanel({
+  properties,
+  slug,
+}: {
+  properties: PropertyRow[];
+  /** Present on a post page, so views are counted per slug. */
+  slug?: string;
+}) {
   return (
     <aside className="hidden w-[248px] shrink-0 overflow-y-auto border-l border-rule bg-panel lg:block">
       <p className="px-3 pt-3 font-mono text-[10px] tracking-[0.14em] text-meta">
@@ -41,6 +50,7 @@ export default function SidePanel({ properties }: { properties: PropertyRow[] })
             </dd>
           </div>
         ))}
+        <VisitCounter slug={slug} />
       </dl>
     </aside>
   );

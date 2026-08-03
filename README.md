@@ -3,8 +3,9 @@
 노션을 CMS로 쓰고, 조판과 렌더링은 직접 만든 개인 기술 블로그입니다.
 Next.js 16 App Router, Vercel 배포.
 
-템플릿을 가져다 쓰지 않았습니다. 디자인 시스템은 [DESIGN.md](./DESIGN.md)에 정의돼 있고
-포트폴리오 사이트와 같은 조판 언어를 공유합니다.
+템플릿을 가져다 쓰지 않았습니다. 화면 전체가 에디터입니다. 글은 열려 있는
+파일이고, 카테고리는 폴더이고, 하단에는 터미널이 있습니다. 다크가 기본이고
+액센트는 터미널 그린입니다. 기준은 [DESIGN.md](./DESIGN.md)에 있습니다.
 
 ## 구조
 
@@ -17,7 +18,9 @@ Next.js 16 App Router, Vercel 배포.
 |---|---|---|
 | 데이터 | `src/lib/notion.ts` | 노션 조회, 속성 → `Post` 변환, 본문을 마크다운으로 |
 | 조판 | `src/app/globals.css` | 토큰과 `.prose` 본문 스타일 |
-| 화면 | `src/app/`, `src/components/` | 목록, 글 상세, 카테고리 |
+| 셸 | `src/components/ide/` | 타이틀바, 탐색기, 탭, 프리뷰, 터미널 바 |
+| 카운터 | `src/lib/visits.ts`, `src/app/api/visit/` | 방문 수 (Upstash, 선택) |
+| 화면 | `src/app/` | 목록, 글 상세, 카테고리 |
 
 ## 1. 노션 준비
 
@@ -122,13 +125,39 @@ https://www.notion.so/1a2b3c4d5e6f7890abcdef1234567890
 환경변수가 없어도 서버는 뜹니다. 글 목록이 빈 상태로 나오므로
 노션 없이 디자인만 손볼 수 있습니다.
 
-## 3. Vercel 배포
+## 3. 방문자 카운터 (선택)
+
+안 붙여도 사이트는 그대로 돌아갑니다. 프로퍼티스 패널에서 카운터 줄만 빠집니다.
+
+1. https://console.upstash.com 에서 Redis 데이터베이스를 만듭니다 (무료 티어: 하루 1만 명령)
+2. **REST API** 탭에서 두 값을 복사해 `.env.local` 에 넣습니다
+
+```
+UPSTASH_REDIS_REST_URL=
+UPSTASH_REDIS_REST_TOKEN=
+```
+
+동작 방식은 이렇습니다.
+
+- 페이지는 정적으로 구워져서 스스로 셀 수 없으므로, 브라우저가 접속 시
+  `/api/visit` 를 한 번 호출해 카운터를 올리고 **그 응답을 바로 표시**합니다.
+  ISR 로 구운 HTML 에 숫자를 박으면 최대 15분 지난 값이 보입니다.
+- 같은 세션에서 새로고침하면 올리지 않고 읽기만 합니다. 새로고침으로
+  숫자가 부풀지 않습니다.
+- `today` 는 **한국 시간 기준**입니다. 날짜 키는 3일 뒤 스스로 만료되므로
+  저장소에 죽은 키가 쌓이지 않습니다.
+- 글 상세에서는 `views` 로 그 글의 조회수도 셉니다.
+
+Vercel 에 배포할 때도 같은 환경변수 두 개를 넣어야 합니다.
+
+## 4. Vercel 배포
 
 1. Vercel에서 이 저장소를 임포트합니다. 프리셋은 Next.js가 자동으로 잡힙니다.
 2. **Settings → Environment Variables**에 세 개를 넣습니다.
    - `NOTION_TOKEN`
    - `NOTION_DATABASE_ID`
    - `NEXT_PUBLIC_SITE_URL` (예: `https://blog.example.com`)
+   - `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` (카운터를 쓸 때만)
 3. 배포합니다.
 
 글을 새로 쓰면 최대 15분 뒤에 사이트에 반영됩니다. 바로 반영하고 싶으면
