@@ -1,35 +1,26 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { visitorApi } from '@/lib/api/visitors';
-import { VisitorStatsResponse } from '@/types/visitor';
-
 export default function Footer() {
-  const [stats, setStats] = useState<VisitorStatsResponse | null>(null);
-
-  useEffect(() => {
-    visitorApi.getStats().then(setStats).catch(() => {});
-  }, []);
-
   return (
-    <footer className="border-t border-border-primary bg-bg-primary">
-      <div className="mx-auto max-w-[720px] px-5 py-10">
-        <div className="mb-6">
-          <p className="text-lg font-bold text-text-primary">AI Blog</p>
-          <p className="mt-1 text-sm text-text-tertiary">AI 기술 블로그</p>
+    <footer className="border-t border-rule">
+      <div className="mx-auto flex max-w-[760px] flex-col gap-6 px-5 py-12 md:flex-row md:items-end md:justify-between md:px-8">
+        <div>
+          <p className="text-[15px] font-semibold tracking-[-0.01em] text-ink">
+            이희망
+          </p>
+          <p className="mt-1.5 text-[13px] text-meta">
+            백엔드와 AI 협업에 대해 씁니다.
+          </p>
         </div>
 
-        {stats && (
-          <div className="mb-6 flex gap-6 text-sm text-text-tertiary">
-            <span>전체 방문 {stats.totalCount.toLocaleString()}</span>
-            <span>오늘 방문 {stats.todayCount.toLocaleString()}</span>
-          </div>
-        )}
-
-        <div className="border-t border-border-secondary pt-6">
-          <p className="text-xs text-text-tertiary">
-            &copy; {new Date().getFullYear()} AI Blog. All rights reserved.
-          </p>
+        <div className="flex items-end gap-6 text-[11px] tracking-[0.08em] text-meta">
+          <a
+            href="https://github.com/HeeMang-Lee"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-colors hover:text-ink"
+          >
+            GitHub
+          </a>
+          <span className="font-mono tnum">{new Date().getFullYear()}</span>
         </div>
       </div>
     </footer>

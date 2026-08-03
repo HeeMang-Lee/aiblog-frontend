@@ -1,81 +1,42 @@
-import { ApiResponse } from '@/types/api';
-import { PostResponse } from '@/types/post';
-import { CategoryResponse } from '@/types/category';
+import { getPublishedPosts, isNotionConfigured } from '@/lib/notion';
 import PostList from '@/components/blog/PostList';
 import FeaturedPost from '@/components/blog/FeaturedPost';
 import Header from '@/components/common/Header';
 import Footer from '@/components/common/Footer';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-
-async function getPosts(): Promise<PostResponse[]> {
-  try {
-    const res = await fetch(`${API_URL}/api/posts`, { cache: 'no-store' });
-    const body: ApiResponse<PostResponse[]> = await res.json();
-    return body.success ? body.data : [];
-  } catch {
-    return [];
-  }
-}
-
-async function getCategories(): Promise<CategoryResponse[]> {
-  try {
-    const res = await fetch(`${API_URL}/api/categories`, { cache: 'no-store' });
-    const body: ApiResponse<CategoryResponse[]> = await res.json();
-    return body.success ? body.data : [];
-  } catch {
-    return [];
-  }
-}
+/**
+ * Notion serves uploaded files through signed URLs that expire in about an
+ * hour, so pages are rebuilt well inside that window. Raising this saves
+ * requests but starts shipping dead image links.
+ */
+export const revalidate = 900;
 
 export default async function HomePage() {
-  const [posts, categories] = await Promise.all([
-    getPosts(),
-    getCategories(),
-  ]);
-
-  const publishedPosts = posts.filter((p) => p.status === 'PUBLISHED');
-  const featuredPost = publishedPosts[0];
-  const remainingPosts = publishedPosts.slice(1);
+  const posts = await getPublishedPosts();
+  const [featuredPost, ...remainingPosts] = posts;
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg-primary">
+    <div className="flex min-h-[100dvh] flex-col">
       <Header />
-      <main className="mx-auto w-full max-w-[720px] flex-1 px-5 py-10">
-        {/* Featured post */}
+      <main className="mx-auto w-full max-w-[760px] flex-1 px-5 py-14 md:px-8">
         {featuredPost && (
           <section className="mb-16">
             <FeaturedPost post={featuredPost} />
           </section>
         )}
 
-        {/* Category filter */}
-        {categories.length > 0 && (
-          <div className="mb-8 flex flex-wrap gap-2">
-            <a
-              href="/"
-              className="rounded-full bg-accent px-4 py-1.5 text-sm font-medium text-white transition-colors"
-            >
-              전체
-            </a>
-            {categories.map((cat) => (
-              <a
-                key={cat.id}
-                href={`/categories/${cat.id}`}
-                className="rounded-full border border-border-primary px-4 py-1.5 text-sm font-medium text-text-secondary transition-colors hover:border-accent hover:text-accent"
-              >
-                {cat.name}
-              </a>
-            ))}
-          </div>
-        )}
-
-        {/* Article list */}
         <section>
-          <h2 className="mb-8 text-xl font-bold text-text-primary">
-            전체 아티클
+          <h2 className="mb-6 text-[11px] font-medium tracking-[0.02em] text-meta">
+            {featuredPost ? '지난 글' : '글'}
           </h2>
-          <PostList posts={remainingPosts.length > 0 ? remainingPosts : publishedPosts} />
+          <PostList
+            posts={remainingPosts}
+            emptyMessage={
+              isNotionConfigured
+                ? '노션 데이터베이스에서 글의 상태를 발행으로 바꾸면 여기에 쌓입니다.'
+                : 'NOTION_TOKEN과 NOTION_DATABASE_ID를 .env.local에 넣으면 노션에서 글을 읽어옵니다.'
+            }
+          />
         </section>
       </main>
       <Footer />

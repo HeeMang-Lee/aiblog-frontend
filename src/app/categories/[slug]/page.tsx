@@ -1,73 +1,55 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { ApiResponse } from '@/types/api';
-import { PostResponse } from '@/types/post';
-import { CategoryResponse } from '@/types/category';
+import { getCategories, getPostsByCategorySlug } from '@/lib/notion';
 import PostList from '@/components/blog/PostList';
 import Header from '@/components/common/Header';
 import Footer from '@/components/common/Footer';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+export const revalidate = 900;
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
-async function getCategory(id: string): Promise<CategoryResponse | null> {
-  try {
-    const res = await fetch(`${API_URL}/api/categories/${id}`, { cache: 'no-store' });
-    if (!res.ok) return null;
-    const body: ApiResponse<CategoryResponse> = await res.json();
-    return body.success ? body.data : null;
-  } catch {
-    return null;
-  }
-}
-
-async function getPostsByCategory(categoryId: string): Promise<PostResponse[]> {
-  try {
-    const res = await fetch(`${API_URL}/api/posts?categoryId=${categoryId}`, { cache: 'no-store' });
-    const body: ApiResponse<PostResponse[]> = await res.json();
-    return body.success ? body.data : [];
-  } catch {
-    return [];
-  }
+export async function generateStaticParams() {
+  const categories = await getCategories();
+  return categories.map((category) => ({ slug: category.slug }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { id } = await params;
-  const category = await getCategory(id);
+  const { slug } = await params;
+  const { category } = await getPostsByCategorySlug(slug);
   if (!category) return { title: '카테고리를 찾을 수 없습니다' };
 
   return {
-    title: `${category.name} - AI Blog`,
-    description: category.description || `${category.name} 카테고리의 게시글 목록`,
+    title: category.name,
+    description: `${category.name} 카테고리의 글 목록`,
   };
 }
 
 export default async function CategoryPage({ params }: PageProps) {
-  const { id } = await params;
-  const [category, posts] = await Promise.all([
-    getCategory(id),
-    getPostsByCategory(id),
-  ]);
-
+  const { slug } = await params;
+  const { category, posts } = await getPostsByCategorySlug(slug);
   if (!category) notFound();
 
-  const publishedPosts = posts.filter((p) => p.status === 'PUBLISHED');
-
   return (
-    <div className="flex min-h-screen flex-col bg-bg-primary">
+    <div className="flex min-h-[100dvh] flex-col">
       <Header />
-      <main className="mx-auto w-full max-w-[720px] flex-1 px-5 py-10">
+      <main className="mx-auto w-full max-w-[760px] flex-1 px-5 py-14 md:px-8">
+        {/* One stacked block, not a headline with a floating explainer. */}
         <div className="mb-10">
-          <span className="text-sm font-medium text-accent">{category.name}</span>
-          <h1 className="mt-2 text-2xl font-bold text-text-primary">{category.name}</h1>
-          {category.description && (
-            <p className="mt-2 text-text-secondary">{category.description}</p>
-          )}
+          <h1 className="text-[22px] font-semibold leading-[1.3] tracking-[-0.02em] text-ink">
+            {category.name}
+          </h1>
+          <p className="mt-3 font-mono tnum text-[11px] tracking-[0.08em] text-meta">
+            글 {category.count}
+          </p>
         </div>
-        <PostList posts={publishedPosts} />
+
+        <PostList
+          posts={posts}
+          emptyMessage="이 카테고리에 발행된 글이 아직 없습니다."
+        />
       </main>
       <Footer />
     </div>

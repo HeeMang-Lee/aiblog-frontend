@@ -1,21 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: 'http://localhost:8080/api/:path*',
-      },
-    ];
-  },
   images: {
+    // Notion serves uploaded files from S3 with expiring signatures, and covers
+    // picked from its gallery come from Unsplash.
     remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '8080',
-      },
+      { protocol: "https", hostname: "*.amazonaws.com" },
+      { protocol: "https", hostname: "www.notion.so" },
+      { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
 };

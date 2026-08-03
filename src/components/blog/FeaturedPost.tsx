@@ -1,44 +1,48 @@
 import Link from 'next/link';
-import { PostResponse } from '@/types/post';
+import { Post } from '@/types/post';
+import { formatDate, toISODate } from '@/lib/utils/date';
 
 interface FeaturedPostProps {
-  post: PostResponse;
+  post: Post;
 }
 
 export default function FeaturedPost({ post }: FeaturedPostProps) {
-  const excerpt = post.content
-    .replace(/[#*`>\-\[\]()!|]/g, '')
-    .replace(/\n+/g, ' ')
-    .trim()
-    .substring(0, 200);
-
   return (
-    <Link href={`/posts/${post.id}`} className="group block">
-      <div className="overflow-hidden rounded-2xl bg-bg-hero">
-        {post.ogImage ? (
-          <img
-            src={post.ogImage}
-            alt={post.title}
-            className="aspect-[2/1] w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-          />
-        ) : (
-          <div className="flex aspect-[2/1] w-full items-center justify-center">
-            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" className="text-text-tertiary opacity-30">
-              <rect x="2" y="3" width="20" height="18" rx="2" stroke="currentColor" strokeWidth="1.5" />
-              <circle cx="8.5" cy="9.5" r="2" stroke="currentColor" strokeWidth="1.5" />
-              <path d="M2 17l5-5 3 3 4-4 8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
+    <Link
+      href={`/posts/${encodeURIComponent(post.slug)}`}
+      className="group block"
+    >
+      {/* The lead item puts its image above the text; list rows put theirs
+          beside it. That difference is what marks this one as the lead. */}
+      {post.cover && (
+        <img
+          src={post.cover}
+          alt=""
+          className="mb-6 aspect-[2/1] w-full rounded-xs border border-rule object-cover"
+        />
+      )}
+
+      <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] tracking-[0.02em] text-meta">
+        {post.category && <span>{post.category}</span>}
+        {post.category && (
+          <span aria-hidden className="text-rule-strong">
+            ·
+          </span>
         )}
-      </div>
-      <div className="mt-5">
-        <h2 className="text-2xl font-bold leading-tight text-text-primary transition-colors group-hover:text-accent">
-          {post.title}
-        </h2>
-        <p className="mt-3 text-base leading-relaxed text-text-secondary line-clamp-2">
-          {excerpt}
+        <time dateTime={toISODate(post.date)} className="font-mono tnum tracking-[0.08em]">
+          {formatDate(post.date)}
+        </time>
+      </p>
+
+      <h2 className="mt-2.5 text-[22px] font-semibold leading-[1.3] tracking-[-0.02em] text-ink transition-colors group-hover:text-accent">
+        {post.title}
+      </h2>
+
+      {post.summary && (
+        <p className="mt-3 line-clamp-2 max-w-[68ch] text-[15px] leading-[1.7] text-body">
+          {post.summary}
         </p>
-      </div>
+      )}
     </Link>
   );
 }

@@ -1,37 +1,47 @@
-'use client';
-
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { aiApi } from '@/lib/api/ai';
-import { PostRecommendationResponse } from '@/types/ai';
+import { Post } from '@/types/post';
+import { formatDate, toISODate } from '@/lib/utils/date';
 
 interface RecommendedPostsProps {
-  postId: number;
+  posts: Post[];
 }
 
-export default function RecommendedPosts({ postId }: RecommendedPostsProps) {
-  const [recommendations, setRecommendations] = useState<PostRecommendationResponse[]>([]);
-
-  useEffect(() => {
-    aiApi.getRecommendations(postId).then(setRecommendations).catch(() => {});
-  }, [postId]);
-
-  if (recommendations.length === 0) return null;
+/**
+ * Related posts are resolved on the server from shared tags and category, so
+ * the list renders with the page instead of popping in after hydration.
+ */
+export default function RecommendedPosts({ posts }: RecommendedPostsProps) {
+  if (posts.length === 0) return null;
 
   return (
-    <section className="mt-16 rounded-2xl border border-border-primary bg-bg-secondary p-6">
-      <h3 className="mb-5 text-lg font-bold text-text-primary">추천 게시글</h3>
-      <ul className="space-y-4">
-        {recommendations.map((rec) => (
-          <li key={rec.id}>
+    <section className="mt-20">
+      <h2 className="text-[11px] font-medium tracking-[0.02em] text-meta">
+        이어서 읽을 글
+      </h2>
+      <ul className="mt-4">
+        {posts.map((post) => (
+          <li key={post.id} className="border-t border-rule">
             <Link
-              href={`/posts/${rec.recommendedPostId}`}
-              className="group block rounded-xl p-3 transition-colors hover:bg-bg-card-hover"
+              href={`/posts/${encodeURIComponent(post.slug)}`}
+              className="group block py-5"
             >
-              <p className="font-medium text-text-primary transition-colors group-hover:text-accent">
-                {rec.recommendedPostTitle}
+              <p className="text-[15px] font-semibold leading-[1.5] tracking-[-0.01em] text-ink transition-colors group-hover:text-accent">
+                {post.title}
               </p>
-              <p className="mt-1 text-sm text-text-tertiary">{rec.reason}</p>
+              <p className="mt-1.5 flex flex-wrap items-center gap-x-2.5 text-[11px] tracking-[0.02em] text-meta">
+                {post.category && <span>{post.category}</span>}
+                {post.category && (
+                  <span aria-hidden className="text-rule-strong">
+                    ·
+                  </span>
+                )}
+                <time
+                  dateTime={toISODate(post.date)}
+                  className="font-mono tnum tracking-[0.08em]"
+                >
+                  {formatDate(post.date)}
+                </time>
+              </p>
             </Link>
           </li>
         ))}

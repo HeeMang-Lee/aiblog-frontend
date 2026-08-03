@@ -7,15 +7,20 @@ interface MarkdownRendererProps {
   content: string;
 }
 
+/**
+ * All article styling lives in the `.prose` block in globals.css so the
+ * design system owns it in one place. Piling `prose-*` modifiers here is how
+ * the old version ended up with radii and grays that fought the tokens.
+ */
 export default function MarkdownRenderer({ content }: MarkdownRendererProps) {
   return (
-    <article className="prose prose-lg max-w-none prose-headings:text-text-primary prose-p:text-text-secondary prose-a:text-accent prose-strong:text-text-primary prose-code:rounded prose-code:bg-bg-code prose-code:px-1.5 prose-code:py-0.5 prose-code:text-text-primary prose-pre:bg-bg-code prose-pre:text-text-secondary prose-blockquote:border-accent prose-blockquote:text-text-secondary prose-li:text-text-secondary prose-hr:border-border-primary prose-th:text-text-primary prose-td:text-text-secondary">
+    <div className="prose">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeHighlight, rehypeRaw]}
       >
         {content}
       </ReactMarkdown>
-    </article>
+    </div>
   );
 }
