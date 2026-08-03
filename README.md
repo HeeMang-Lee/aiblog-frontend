@@ -1,5 +1,7 @@
 # 이희망 기술 블로그
 
+**https://thishopelog.vercel.app**
+
 노션을 CMS로 쓰고, 조판과 렌더링은 직접 만든 개인 기술 블로그입니다.
 Next.js 16 App Router, Vercel 배포.
 
@@ -21,6 +23,39 @@ Next.js 16 App Router, Vercel 배포.
 | 셸 | `src/components/ide/` | 타이틀바, 탐색기, 탭, 프리뷰, 터미널 바 |
 | 카운터 | `src/lib/visits.ts`, `src/app/api/visit/` | 방문 수 (Upstash, 선택) |
 | 화면 | `src/app/` | 목록, 글 상세, 카테고리 |
+
+### 화면
+
+```
+┌──────────────────────────────────────────────┐
+│ ● ● ●        이희망 - blog             [☾]  │  타이틀바
+├──────────┬───────────────────┬───────────────┤
+│ EXPLORER │  파일명.md         │  PREVIEW      │  탭
+│          ├───────────────────┤  ┌─────────┐  │
+│ ▾ posts  │ 1                 │  │ 글리프  │  │  코드 문자로 만든 3D
+│   글 …   │ 2  본문 …          │  └─────────┘  │
+│ ▾ categories                 │  PROPERTIES   │
+│   분류 … │                   │  status  …    │
+├──────────┴───────────────────┴───────────────┤
+│ $ blog --list                     3 posts    │  터미널
+└──────────────────────────────────────────────┘
+```
+
+### 디자인 기준 요약
+
+전문은 [DESIGN.md](./DESIGN.md)에 있습니다. 자주 어기게 되는 것만 옮깁니다.
+
+| 항목 | 규칙 |
+|---|---|
+| 기본 테마 | **다크.** 라이트는 같은 셸의 밝은 에디터 테마 |
+| 액센트 | 터미널 그린 `#4ADE80` / 라이트 `#15803D` 하나 |
+| 서체 | IBM Plex Sans KR + IBM Plex Mono |
+| 반경 | 2px 하나. 창 제어 점 셋만 원 |
+| 본문 | 16px / 행간 1.8 / 68ch |
+
+**Mono는 한글에 쓰지 않습니다.** Plex Mono에 한글 글립이 없어서, 한글에 `font-mono`를 걸면 한글만 시스템 폰트로 대체되고 공백이 고정폭이라 `측정된  결과`처럼 벌어집니다. Mono는 경로, 줄 번호, 터미널, 날짜, 코드에만 씁니다.
+
+**스캔라인과 CRT 효과는 본문에 걸지 않습니다.** 가는 가로줄은 가독성을 직접 해치고 저시력 사용자에게는 읽기를 불가능하게 만듭니다. 해커 감성은 셸에서 냅니다.
 
 ## 1. 노션 준비
 
@@ -152,8 +187,22 @@ Vercel 에 배포할 때도 같은 환경변수 두 개를 넣어야 합니다.
 
 ## 4. Vercel 배포
 
+**이미 배포돼 있습니다.** GitHub 연동이 걸려 있어 `main` 에 push 하면 자동으로 나갑니다.
+
+```
+프로젝트   leeheemangs-projects/aiblog-frontend
+주소       https://thishopelog.vercel.app
+```
+
+`*.vercel.app` 하위 이름은 비어 있으면 무료로 가져갈 수 있습니다. 바꾸려면
+`npx vercel domains add <원하는이름>.vercel.app aiblog-frontend` 를 쓰고
+`NEXT_PUBLIC_SITE_URL` 도 함께 바꾸면 됩니다.
+
+새로 세팅할 때는 이렇게 합니다.
+
 1. Vercel에서 이 저장소를 임포트합니다. 프리셋은 Next.js가 자동으로 잡힙니다.
-2. **Settings → Environment Variables**에 세 개를 넣습니다.
+2. **Settings → Environment Variables**에 아래를 넣습니다.
+   `.env.local` 이 이미 채워져 있다면 `bash scripts/push-env.sh` 한 줄로 끝납니다.
    - `NOTION_TOKEN`
    - `NOTION_DATABASE_ID`
    - `NEXT_PUBLIC_SITE_URL` (예: `https://blog.example.com`)
@@ -192,8 +241,17 @@ git checkout java-backend
 ## 스크립트
 
 ```bash
-npm run dev     # 개발 서버
-npm run build   # 프로덕션 빌드
-npm run start   # 빌드 결과 실행
-npm run lint    # ESLint
+npm run dev            # 개발 서버
+npm run build          # 프로덕션 빌드
+npm run start          # 빌드 결과 실행
+npm run lint           # ESLint
+npm run notion:check   # 노션 연결 진단
+bash scripts/push-env.sh   # .env.local 을 Vercel 환경변수로 등록
 ```
+
+## 관련 저장소
+
+| 저장소 | 내용 |
+|---|---|
+| [aiportfolio](https://github.com/HeeMang-Lee/aiportfolio) | 포트폴리오. 사양서 조판, 버밀리언 액센트 |
+| [aiblog-backend](https://github.com/HeeMang-Lee/aiblog-backend) | Spring Boot 블로그 API. 노션으로 옮기면서 현재는 쉬는 중 |
