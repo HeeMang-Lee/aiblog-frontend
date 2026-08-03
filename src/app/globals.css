@@ -1,90 +1,205 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
-/* Light mode (default) */
+/* Tokens are normative and live in DESIGN.md. They are shared with the
+   portfolio site so the two properties read as one hand. Light is the default
+   world; .dark swaps values only, never the strategy. */
 :root,
 .light {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-card: #ffffff;
-  --bg-card-hover: #f8f9fa;
-  --bg-code: #f1f3f5;
-  --bg-tag: #eff6ff;
-  --text-primary: #191f28;
-  --text-secondary: #4e5968;
-  --text-tertiary: #8b95a1;
-  --text-tag: #3182f6;
-  --border-primary: #e5e8eb;
-  --border-secondary: #f2f4f6;
-  --accent: #3182f6;
-  --accent-hover: #1b64da;
-  --bg-hero: #f2f4f6;
+  --paper: #fbfbfa;
+  --paper-sunk: #f4f4f2;
+  --ink: #16161a;
+  --ink-body: #43434b;
+  --ink-meta: #6e6e78;
+  --rule: #e3e3e0;
+  --rule-strong: #c9c9c4;
+  --accent: #d14424;
+  --accent-hover: #a83519;
+  --accent-wash: rgba(209, 68, 36, 0.08);
+  --code-bg: #f3f3f1;
+  --selection: rgba(209, 68, 36, 0.16);
 }
 
-/* Dark mode */
 .dark {
-  --bg-primary: #17171c;
-  --bg-secondary: #1e1e24;
-  --bg-card: #21212a;
-  --bg-card-hover: #2b2b36;
-  --bg-code: #2b2b36;
-  --bg-tag: rgba(49, 130, 246, 0.15);
-  --text-primary: #ececf1;
-  --text-secondary: #b4b4be;
-  --text-tertiary: #73737e;
-  --text-tag: #6ba6ff;
-  --border-primary: #2e2e3a;
-  --border-secondary: #25252f;
-  --accent: #6ba6ff;
-  --accent-hover: #8ab8ff;
-  --bg-hero: #1e1e24;
+  --paper: #111112;
+  --paper-sunk: #17171a;
+  --ink: #f2f2f0;
+  --ink-body: #b4b4bc;
+  --ink-meta: #84848e;
+  --rule: #28282c;
+  --rule-strong: #3d3d43;
+  --accent: #ff6a45;
+  --accent-hover: #ff8a6b;
+  --accent-wash: rgba(255, 106, 69, 0.12);
+  --code-bg: #1a1a1e;
+  --selection: rgba(255, 106, 69, 0.22);
 }
 
 @theme inline {
-  --color-bg-primary: var(--bg-primary);
-  --color-bg-secondary: var(--bg-secondary);
-  --color-bg-card: var(--bg-card);
-  --color-bg-card-hover: var(--bg-card-hover);
-  --color-bg-code: var(--bg-code);
-  --color-bg-tag: var(--bg-tag);
-  --color-bg-hero: var(--bg-hero);
-  --color-text-primary: var(--text-primary);
-  --color-text-secondary: var(--text-secondary);
-  --color-text-tertiary: var(--text-tertiary);
-  --color-text-tag: var(--text-tag);
-  --color-border-primary: var(--border-primary);
-  --color-border-secondary: var(--border-secondary);
+  --color-paper: var(--paper);
+  --color-paper-sunk: var(--paper-sunk);
+  --color-ink: var(--ink);
+  --color-body: var(--ink-body);
+  --color-meta: var(--ink-meta);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-accent-wash: var(--accent-wash);
+  --color-code-bg: var(--code-bg);
+
+  --font-sans: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic",
+    sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  /* Shape lock: one radius for the whole product. */
+  --radius-none: 0;
+  --radius-xs: 2px;
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 2px;
+  --radius-xl: 2px;
+  --radius-2xl: 2px;
+  --radius-3xl: 2px;
+  --radius-full: 2px;
+
+  --tracking-label: 0.08em;
+  --tracking-meta: 0.02em;
 }
 
 body {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  background: var(--paper);
+  color: var(--ink-body);
+  font-family: var(--font-sans);
 }
 
-/* Prose dark mode overrides */
-.dark .prose {
-  --tw-prose-body: var(--text-secondary);
-  --tw-prose-headings: var(--text-primary);
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: var(--selection);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Figures and dates are read as data, so digits must not shift width. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------------------
+   Article body. This is the product: everything above exists to deliver it.
+   Typography plugin defaults are replaced rather than tinted, because the
+   plugin ships its own gray ramp and radii that fight the design system.
+   --------------------------------------------------------------------------- */
+.prose {
+  --tw-prose-body: var(--ink-body);
+  --tw-prose-headings: var(--ink);
+  --tw-prose-lead: var(--ink-body);
   --tw-prose-links: var(--accent);
-  --tw-prose-bold: var(--text-primary);
-  --tw-prose-code: var(--text-primary);
-  --tw-prose-pre-bg: #1e1e24;
-  --tw-prose-pre-code: #e5e8eb;
-  --tw-prose-quotes: var(--text-secondary);
-  --tw-prose-hr: var(--border-primary);
-  --tw-prose-th-borders: var(--border-primary);
-  --tw-prose-td-borders: var(--border-secondary);
+  --tw-prose-bold: var(--ink);
+  --tw-prose-counters: var(--ink-meta);
+  --tw-prose-bullets: var(--rule-strong);
+  --tw-prose-hr: var(--rule);
+  --tw-prose-quotes: var(--ink);
+  --tw-prose-quote-borders: var(--accent);
+  --tw-prose-captions: var(--ink-meta);
+  --tw-prose-code: var(--ink);
+  --tw-prose-pre-code: var(--ink-body);
+  --tw-prose-pre-bg: var(--code-bg);
+  --tw-prose-th-borders: var(--rule-strong);
+  --tw-prose-td-borders: var(--rule);
+
+  max-width: 68ch;
+  font-size: 16px;
+  line-height: 1.8;
+  letter-spacing: -0.005em;
 }
 
-/* Scrollbar */
+.prose :where(h2, h3, h4) {
+  letter-spacing: -0.02em;
+  scroll-margin-top: 96px;
+}
+
+.prose :where(h2) {
+  font-size: 1.375rem;
+  margin-top: 2.75em;
+  padding-top: 1.25em;
+  border-top: 1px solid var(--rule);
+}
+
+.prose :where(h3) {
+  font-size: 1.125rem;
+  margin-top: 2em;
+}
+
+.prose :where(a) {
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.prose :where(a):hover {
+  color: var(--accent-hover);
+}
+
+/* Inline code is a label, not a block: no pill, no heavy fill. */
+.prose :where(code):not(:where(pre code)) {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  font-weight: 400;
+  background: var(--code-bg);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 0.1em 0.35em;
+}
+
+.prose :where(code):not(:where(pre code))::before,
+.prose :where(code):not(:where(pre code))::after {
+  content: none;
+}
+
+.prose :where(pre) {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.7;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  padding: 1.15em 1.25em;
+}
+
+.prose :where(blockquote) {
+  font-style: normal;
+  font-weight: 400;
+  border-left-width: 2px;
+  padding-left: 1.25em;
+}
+
+.prose :where(blockquote p:first-of-type)::before,
+.prose :where(blockquote p:last-of-type)::after {
+  content: none;
+}
+
+.prose :where(img) {
+  border-radius: 2px;
+  border: 1px solid var(--rule);
+}
+
+.prose :where(table) {
+  font-size: 13px;
+}
+
+.prose :where(th) {
+  font-weight: 600;
+  color: var(--ink);
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -92,11 +207,20 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--text-tertiary);
-  border-radius: 3px;
+  background: var(--rule-strong);
+  border: 3px solid var(--paper);
 }
 
-/* Selection */
-::selection {
-  background: rgba(49, 130, 246, 0.2);
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
