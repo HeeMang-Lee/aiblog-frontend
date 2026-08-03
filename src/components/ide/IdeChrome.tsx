@@ -56,10 +56,12 @@ export default function IdeChrome({
           )}
         </button>
 
-        <span className="hidden gap-1.5 md:flex" aria-hidden>
-          <i className="block h-2.5 w-2.5 rounded-full bg-rule-strong" />
-          <i className="block h-2.5 w-2.5 rounded-full bg-rule-strong" />
-          <i className="block h-2.5 w-2.5 rounded-full bg-rule-strong" />
+        {/* Window controls. Decoration, not buttons: they carry no action, so
+            they are marked hidden rather than dressed up as controls. */}
+        <span className="hidden gap-2 md:flex" aria-hidden>
+          <i className="block h-3 w-3 rounded-[50%] bg-win-close" />
+          <i className="block h-3 w-3 rounded-[50%] bg-win-min" />
+          <i className="block h-3 w-3 rounded-[50%] bg-win-max" />
         </span>
 
         <p className="flex-1 truncate text-center text-[12px] text-meta">

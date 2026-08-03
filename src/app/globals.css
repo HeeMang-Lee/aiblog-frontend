@@ -21,6 +21,13 @@
   --keyword: #6d28d9;
   --string: #a15c07;
   --selection: rgba(21, 128, 61, 0.16);
+
+  /* Window controls. The one place other hues are allowed: these three dots
+     are a read-at-a-glance convention, not decoration. Slightly muted so they
+     do not out-shout the accent. */
+  --win-close: #ec6a5e;
+  --win-min: #f3bf4f;
+  --win-max: #61c454;
 }
 .dark {
   --bg: #080a09;
@@ -37,6 +44,9 @@
   --keyword: #7dd3fc;
   --string: #d8b96a;
   --selection: rgba(74, 222, 128, 0.22);
+  --win-close: #ff5f57;
+  --win-min: #febc2e;
+  --win-max: #28c840;
 }
 @theme inline {
   --color-bg: var(--bg);
@@ -52,6 +62,9 @@
   --color-accent-soft: var(--accent-soft);
   --color-keyword: var(--keyword);
   --color-string: var(--string);
+  --color-win-close: var(--win-close);
+  --color-win-min: var(--win-min);
+  --color-win-max: var(--win-max);
 
   --font-sans: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic",
     sans-serif;
