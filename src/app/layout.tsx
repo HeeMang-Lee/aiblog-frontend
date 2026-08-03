@@ -31,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className="light" suppressHydrationWarning>
+    <html lang="ko" className="dark" suppressHydrationWarning>
       <body className={`${plexMono.variable} antialiased`}>
         <ThemeProvider>{children}</ThemeProvider>
       </body>

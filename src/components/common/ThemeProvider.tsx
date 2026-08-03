@@ -10,40 +10,36 @@ interface ThemeContextType {
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: 'light',
+  theme: 'dark',
   toggleTheme: () => {},
 });
 
+/**
+ * Dark is the home state for this design, so it is the default when nothing
+ * is stored. Light is the same shell in a light editor theme.
+ */
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>('dark');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('theme') as Theme | null;
-    if (stored) {
-      setTheme(stored);
-      document.documentElement.classList.remove('light', 'dark');
-      document.documentElement.classList.add(stored);
-    }
+    if (stored === 'light' || stored === 'dark') setTheme(stored);
     setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!mounted) return;
     document.documentElement.classList.remove('light', 'dark');
     document.documentElement.classList.add(theme);
-    localStorage.setItem('theme', theme);
+    if (mounted) localStorage.setItem('theme', theme);
   }, [theme, mounted]);
 
-  const toggleTheme = () => {
+  const toggleTheme = () =>
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
-  };
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      <div style={mounted ? undefined : { visibility: 'hidden' }}>
-        {children}
-      </div>
+      {children}
     </ThemeContext.Provider>
   );
 }
