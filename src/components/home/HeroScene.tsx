@@ -26,8 +26,7 @@ import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment
 
 const DAMPING = 0.075;
 
-/** Matches the stage panel behind the canvas in Hero.tsx. */
-const STAGE_COLOR = '#0e0e10';
+const FALLBACK_STAGE = { light: '#f1f1ef', dark: '#0e0e10' };
 
 export default function HeroScene() {
   const mountRef = useRef<HTMLDivElement>(null);
@@ -55,7 +54,7 @@ export default function HeroScene() {
     // The object sits on its own dark stage rather than on the page. Bloom and
     // ACES tone mapping both operate on the cleared background, so a
     // transparent canvas would tint the page behind it into a visible box.
-    renderer.setClearColor(STAGE_COLOR, 1);
+    renderer.setClearColor(FALLBACK_STAGE.light, 1);
     renderer.domElement.style.width = '100%';
     renderer.domElement.style.height = '100%';
     renderer.domElement.style.display = 'block';
@@ -98,7 +97,8 @@ export default function HeroScene() {
     fillLight.position.set(-3.2, -1.8, 2.2);
     scene.add(fillLight);
 
-    scene.add(new THREE.AmbientLight('#ffffff', 0.12));
+    const ambient = new THREE.AmbientLight('#ffffff', 0.12);
+    scene.add(ambient);
 
     /* Post-processing ------------------------------------------------------ */
     const hdrTarget = new THREE.WebGLRenderTarget(1, 1, {
@@ -119,10 +119,47 @@ export default function HeroScene() {
       const accent = (styles.getPropertyValue('--accent') || '#d14424').trim();
 
       accentLight.color.set(accent);
-      // The stage is dark in both themes, so the object barely changes. Only
-      // the exposure moves, to keep it from glaring on a light page.
+
+      // The stage follows the page instead of punching a dark hole in it, so
+      // the clear colour is the `--stage` token itself.
+      const stage =
+        (styles.getPropertyValue('--stage') || '').trim() ||
+        (isDark ? FALLBACK_STAGE.dark : FALLBACK_STAGE.light);
+      renderer.setClearColor(stage, 1);
+      // The material itself changes with the theme, not just its colour.
+      //
+      // Chrome only reads against a dark ground. On a light stage it mirrors
+      // the bright environment and turns into a pale blob that vanishes into
+      // the panel. So the light theme drops metalness and renders a dark satin
+      // solid instead: a clear silhouette, lit by an accent rim.
+      material.metalness = isDark ? 1 : 0.25;
+      material.roughness = isDark ? 0.28 : 0.38;
+      material.color.set(isDark ? '#43434b' : '#24242a');
+      material.envMapIntensity = isDark ? 0.55 : 0.3;
+      material.iridescence = isDark ? 0.12 : 0;
+      // three r155+ uses physical light units. The dark theme can take a hard
+      // key because chrome only shows it as narrow highlights; on the satin
+      // light-theme material the same numbers blow the surface to white, so the
+      // whole rig drops by roughly 4x and the accent becomes a rim, not a wash.
+      ambient.intensity = isDark ? 0.12 : 0.05;
+      fillLight.intensity = isDark ? 26 : 7;
+      accentLight.intensity = isDark ? 90 : 30;
+      // Tone mapping is a dark-theme tool here. ACES compresses highlights, so
+      // on the light theme it would darken the pale stage away from the token
+      // and leave a visible step against the page. With bloom off there is no
+      // HDR range left to map anyway.
+      renderer.toneMapping = isDark
+        ? THREE.ACESFilmicToneMapping
+        : THREE.NoToneMapping;
       renderer.toneMappingExposure = isDark ? 1.15 : 1.0;
-      bloom.strength = isDark ? 0.62 : 0.5;
+
+      // Bloom is switched off on the light theme, not merely reduced. The pale
+      // stage itself sits above the bloom threshold, so the pass blooms the
+      // background and lays a white haze over the object. Glow needs a dark
+      // ground; on paper the object is carried by contrast instead.
+      bloom.enabled = isDark;
+      bloom.strength = isDark ? 0.62 : 0;
+      material.needsUpdate = true;
     };
     applyTheme();
 

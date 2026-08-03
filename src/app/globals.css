@@ -17,6 +17,9 @@
   --accent-hover: #a83519;
   --accent-wash: rgba(209, 68, 36, 0.08);
   --code-bg: #f3f3f1;
+  /* Backdrop for the hero's 3D stage. Sits a touch under the page so the panel
+     reads as an inset, never as a hole punched in the paper. */
+  --stage: #f1f1ef;
   --selection: rgba(209, 68, 36, 0.16);
 }
 
@@ -32,6 +35,7 @@
   --accent-hover: #ff8a6b;
   --accent-wash: rgba(255, 106, 69, 0.12);
   --code-bg: #1a1a1e;
+  --stage: #0e0e10;
   --selection: rgba(255, 106, 69, 0.22);
 }
 
@@ -47,6 +51,7 @@
   --color-accent-hover: var(--accent-hover);
   --color-accent-wash: var(--accent-wash);
   --color-code-bg: var(--code-bg);
+  --color-stage: var(--stage);
 
   --font-sans: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic",
     sans-serif;

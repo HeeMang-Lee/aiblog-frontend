@@ -27,11 +27,12 @@ export default function Hero() {
           </p>
         </div>
 
-        {/* A lit stage, not a transparent overlay. Bloom and ACES tone mapping
-            act on the cleared background, so a see-through canvas would tint
-            the page into a visible rectangle. Giving the object its own dark
-            ground also lets the accent glow read on a light page. */}
-        <div className="aspect-square w-full overflow-hidden rounded-xs bg-[#0e0e10] md:aspect-auto md:h-[320px]">
+        {/* The canvas is cleared to a colour rather than left transparent:
+            bloom and ACES tone mapping both act on the empty background, so a
+            see-through canvas tints the page into a visible rectangle. The
+            clear colour tracks `--stage`, which sits just under the page tone,
+            so the panel reads as a shallow inset in either theme. */}
+        <div className="aspect-square w-full overflow-hidden rounded-xs bg-stage md:aspect-auto md:h-[320px]">
           <HeroScene />
         </div>
       </div>
