@@ -1,36 +1,124 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 이희망 기술 블로그
 
-## Getting Started
+노션을 CMS로 쓰고, 조판과 렌더링은 직접 만든 개인 기술 블로그입니다.
+Next.js 16 App Router, Vercel 배포.
 
-First, run the development server:
+템플릿을 가져다 쓰지 않았습니다. 디자인 시스템은 [DESIGN.md](./DESIGN.md)에 정의돼 있고
+포트폴리오 사이트와 같은 조판 언어를 공유합니다.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 구조
+
+```
+노션 데이터베이스  ──(Notion API)──▶  Next.js (Vercel)
+   글을 여기에 씀                      읽어서 렌더, 15분마다 재생성
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| 층 | 파일 | 하는 일 |
+|---|---|---|
+| 데이터 | `src/lib/notion.ts` | 노션 조회, 속성 → `Post` 변환, 본문을 마크다운으로 |
+| 조판 | `src/app/globals.css` | 토큰과 `.prose` 본문 스타일 |
+| 화면 | `src/app/`, `src/components/` | 목록, 글 상세, 카테고리 |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 1. 노션 준비
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 통합 만들기
 
-## Learn More
+1. https://www.notion.so/profile/integrations 에서 **새 API 통합**을 만듭니다.
+2. 타입은 **내부(Internal)**, 워크스페이스는 본인 것을 고릅니다.
+3. 생성 후 나오는 **Internal Integration Secret**(`ntn_`으로 시작)을 복사합니다.
 
-To learn more about Next.js, take a look at the following resources:
+### 데이터베이스 만들기
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+노션에서 **표 형태의 데이터베이스**를 하나 만들고 아래 속성을 둡니다.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| 속성 | 노션 타입 | 필수 | 설명 |
+|---|---|---|---|
+| 제목 | `제목(title)` | 필수 | 이름은 아무거나 좋습니다. 타입으로 찾습니다 |
+| `Status` 또는 `상태` | `선택` 또는 `상태` | 필수 | `발행`이어야 사이트에 나옵니다 |
+| `Category` 또는 `카테고리` | `선택` | 선택 | 헤더의 카테고리 탭이 여기서 만들어집니다 |
+| `Slug` 또는 `슬러그` | `텍스트` | 선택 | 비우면 제목에서 자동 생성 |
+| `Summary` 또는 `요약` | `텍스트` | 선택 | 목록의 요약문 |
+| `Date` 또는 `발행일` | `날짜` | 선택 | 비우면 생성일을 씁니다 |
+| `Tags` 또는 `태그` | `다중 선택` | 선택 | 관련 글을 묶는 기준 |
 
-## Deploy on Vercel
+속성 이름은 **한글과 영어를 모두 인식**합니다. `Status` 값으로는
+`발행`, `발행됨`, `공개`, `Published`, `Live` 중 아무거나 쓰면 발행으로 봅니다.
+그 외 값은 전부 초안 취급이라 사이트에 나오지 않습니다.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+커버 이미지는 노션 페이지의 커버를 그대로 씁니다.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 통합에 데이터베이스 연결
+
+데이터베이스 페이지 우측 상단 `···` → **연결** → 방금 만든 통합을 고릅니다.
+**이 단계를 빠뜨리면 글이 하나도 안 보입니다.** 가장 흔한 실수입니다.
+
+## 2. 로컬 실행
+
+```bash
+cp .env.example .env.local
+# .env.local 에 NOTION_TOKEN 과 NOTION_DATABASE_ID 를 채웁니다
+npm install
+npm run dev
+```
+
+`NOTION_DATABASE_ID`에는 **노션에서 "링크 복사"한 주소를 그대로 붙여넣으면 됩니다.**
+ID만 따로 뽑아낼 필요 없습니다. 아래 형태를 전부 인식합니다.
+
+```
+https://www.notion.so/heemang/Blog-1a2b3c4d5e6f7890abcdef1234567890?v=9f8e...
+https://www.notion.so/1a2b3c4d5e6f7890abcdef1234567890
+1a2b3c4d-5e6f-7890-abcd-ef1234567890
+1a2b3c4d5e6f7890abcdef1234567890
+```
+
+`?v=...`는 저장된 뷰(필터)를 가리키므로 자동으로 버립니다.
+
+환경변수가 없어도 서버는 뜹니다. 글 목록이 빈 상태로 나오므로
+노션 없이 디자인만 손볼 수 있습니다.
+
+## 3. Vercel 배포
+
+1. Vercel에서 이 저장소를 임포트합니다. 프리셋은 Next.js가 자동으로 잡힙니다.
+2. **Settings → Environment Variables**에 세 개를 넣습니다.
+   - `NOTION_TOKEN`
+   - `NOTION_DATABASE_ID`
+   - `NEXT_PUBLIC_SITE_URL` (예: `https://blog.example.com`)
+3. 배포합니다.
+
+글을 새로 쓰면 최대 15분 뒤에 사이트에 반영됩니다. 바로 반영하고 싶으면
+Vercel 대시보드에서 **Redeploy**를 누르면 됩니다.
+
+## 알아둘 제약
+
+**노션 이미지 URL은 약 1시간이면 만료됩니다.** 업로드한 파일이 S3 서명 URL로
+나가기 때문입니다. 그래서 모든 페이지가 `revalidate = 900`(15분)으로 재생성됩니다.
+이 값을 1시간 가까이 올리면 이미지가 깨진 채로 서빙될 수 있습니다.
+
+오래 유지돼야 하는 이미지는 노션에 업로드하는 대신 **외부 URL을 붙여넣는 편**이
+안전합니다. 그러면 만료되지 않습니다.
+
+**노션 API는 초당 약 3회로 제한됩니다.** 지금은 페이지를 정적으로 굽고 15분마다만
+갱신하므로 문제가 되지 않습니다. 요청마다 조회하도록 바꾸면 걸립니다.
+
+**본문은 마크다운으로 변환해서 렌더합니다.** 제목, 문단, 목록, 코드, 인용, 표,
+이미지는 그대로 나옵니다. 토글은 접히는 블록으로, 콜아웃은 인용문으로 바뀝니다.
+노션 전용 블록(데이터베이스 뷰, 임베드 일부)은 표현되지 않습니다.
+
+## 이 저장소의 다른 브랜치
+
+`java-backend` 브랜치에 **Spring Boot 백엔드(`aiblog-backend`)와 짝을 이루던 버전**이
+남아 있습니다. JWT 로그인, 어드민 CRUD, AI 피드백 패널이 들어 있습니다.
+백엔드를 다시 살릴 때 여기서 출발하면 됩니다.
+
+```bash
+git checkout java-backend
+```
+
+## 스크립트
+
+```bash
+npm run dev     # 개발 서버
+npm run build   # 프로덕션 빌드
+npm run start   # 빌드 결과 실행
+npm run lint    # ESLint
+```
