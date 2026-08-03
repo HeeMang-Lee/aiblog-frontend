@@ -215,19 +215,26 @@ try {
   process.exit(1);
 }
 
-const PUBLISHED = ['published', 'publish', 'live', '발행', '발행됨', '공개'];
+// 노션 한국어 블로그 템플릿은 상태에 이모지를 붙인다("게시됨 🚀").
+// "출판 준비 완료"는 일부러 뺐다. 발행 준비는 발행이 아니다.
+const PUBLISHED = [
+  'published', 'publish', 'live', '발행', '발행됨', '공개', '게시됨', '게시완료',
+];
+const strip = (v) =>
+  v.replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu, '')
+   .replace(/\s+/g, '')
+   .toLowerCase();
+
 const statusOf = (page) => {
   for (const [name, value] of Object.entries(page.properties ?? {})) {
-    if (!['status', '상태'].includes(name.toLowerCase())) continue;
+    if (!['status', '상태'].includes(normalize(name))) continue;
     if (value.type === 'select') return value.select?.name ?? null;
     if (value.type === 'status') return value.status?.name ?? null;
   }
   return null;
 };
 
-const published = rows.results.filter((page) =>
-  PUBLISHED.includes((statusOf(page) ?? '').trim().toLowerCase()),
-);
+const published = rows.results.filter((page) => PUBLISHED.includes(strip(statusOf(page) ?? '')));
 
 console.log('');
 ok(`행 ${rows.results.length}개 조회됨`);

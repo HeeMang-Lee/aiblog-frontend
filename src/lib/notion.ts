@@ -168,12 +168,32 @@ export function slugify(input: string): string {
     .replace(/^-|-$/g, '');
 }
 
-const PUBLISHED_VALUES = ['published', 'publish', 'live', '발행', '발행됨', '공개'];
+/**
+ * Notion's Korean blog template labels its statuses with emoji ("게시됨 🚀"),
+ * so the marker is stripped before comparing. Note that "출판 준비 완료" is
+ * deliberately absent: ready-to-publish is not published.
+ */
+const PUBLISHED_VALUES = [
+  'published',
+  'publish',
+  'live',
+  '발행',
+  '발행됨',
+  '공개',
+  '게시됨',
+  '게시완료',
+];
+
+const stripDecoration = (value: string) =>
+  value
+    .replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu, '')
+    .replace(/\s+/g, '')
+    .toLowerCase();
 
 function readStatus(page: NotionPage): PostStatus {
   const raw = readSelect(page, ['Status', '상태']);
   if (!raw) return 'DRAFT';
-  return PUBLISHED_VALUES.includes(raw.trim().toLowerCase()) ? 'PUBLISHED' : 'DRAFT';
+  return PUBLISHED_VALUES.includes(stripDecoration(raw)) ? 'PUBLISHED' : 'DRAFT';
 }
 
 function toPost(page: NotionPage): Post {
