@@ -136,8 +136,29 @@ try {
 /* 4. 데이터 소스 ------------------------------------------------------- */
 const dataSourceId = database.data_sources?.[0]?.id;
 if (!dataSourceId) {
-  fail('데이터 소스를 찾을 수 없습니다.');
-  hint('노션 API 버전이 예상과 다릅니다. @notionhq/client 버전을 확인하세요.');
+  // databases.retrieve 는 껍데기를 돌려주면서도 성공한다. 안을 볼 권한이
+  // 없으면 data_sources 가 빈 배열로 온다. 즉 여기까지 왔다는 건 표는
+  // 찾았지만 통합에 권한이 없다는 뜻이다.
+  fail('표는 찾았지만 통합에 권한이 없습니다.');
+  console.log('');
+
+  if (database.is_inline) {
+    hint('이 표는 다른 페이지 안에 끼워 넣은 "인라인 표"입니다.');
+    hint('인라인 표는 표가 아니라 표를 담고 있는 페이지를 연결해야 합니다.');
+    hint('');
+    hint('  1. 표가 들어 있는 페이지를 엽니다 (표가 아니라 그 바깥 페이지)');
+    hint('  2. 우측 상단 ··· → "연결 항목 추가"');
+    hint('  3. 추천 목록 말고 검색창에 통합 이름을 직접 입력');
+    hint('');
+    hint('  또는 표 제목 옆 ⋮⋮ → "전체 페이지로 열기" 로 바꾼 뒤 연결해도 됩니다.');
+  } else {
+    hint('  1. https://www.notion.so/profile/integrations');
+    hint('  2. 통합 클릭 → "액세스(Access)" 탭 → "페이지 선택"');
+    hint('  3. 이 표 또는 표가 들어 있는 페이지를 고르고 저장');
+  }
+
+  hint('');
+  hint('연결 후 다시 이 명령을 돌리세요. 반영에 몇 초 걸릴 수 있습니다.');
   process.exit(1);
 }
 ok(`데이터 소스 확인: ${dataSourceId}`);
@@ -158,9 +179,10 @@ for (const [name, value] of properties) {
   console.log(`${DIM}    - ${name} (${value.type})${RESET}`);
 }
 
-const names = properties.map(([n]) => n.toLowerCase());
+const normalize = (n) => n.replace(/\s+/g, '').toLowerCase();
+const names = properties.map(([n]) => normalize(n));
 const hasTitle = properties.some(([, v]) => v.type === 'title');
-const has = (...candidates) => candidates.some((c) => names.includes(c.toLowerCase()));
+const has = (...candidates) => candidates.some((c) => names.includes(normalize(c)));
 
 console.log('');
 hasTitle ? ok('제목 속성 있음') : fail('제목(title) 속성이 없습니다.');
@@ -172,10 +194,10 @@ if (has('Status', '상태')) {
 }
 
 for (const [label, candidates] of [
-  ['카테고리', ['Category', '카테고리', '분류']],
+  ['카테고리', ['Category', '카테고리', '분류', '주제/카테고리', '주제']],
   ['슬러그', ['Slug', '슬러그', 'Path']],
   ['요약', ['Summary', '요약', 'Description', '설명', 'Excerpt']],
-  ['발행일', ['Date', '발행일', '날짜', 'Published', 'PublishedAt']],
+  ['발행일', ['Date', '발행일', '날짜', '게시날짜', '게시일', 'Published', 'PublishedAt']],
   ['태그', ['Tags', '태그']],
 ]) {
   has(...candidates)

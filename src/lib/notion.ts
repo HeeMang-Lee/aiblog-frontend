@@ -84,11 +84,18 @@ type NotionPage = {
   properties?: Record<string, { type?: string } & Record<string, unknown>>;
 };
 
+/**
+ * Property names are typed by hand in Notion, so "주제 /카테고리" and
+ * "주제/카테고리" are the same column to a human. Whitespace is stripped before
+ * comparing so a stray space does not silently drop a field.
+ */
+const normalize = (name: string) => name.replace(/\s+/g, '').toLowerCase();
+
 function findProperty(page: NotionPage, names: string[]) {
   const properties = page.properties ?? {};
-  const wanted = names.map((n) => n.toLowerCase());
+  const wanted = names.map(normalize);
   for (const [key, value] of Object.entries(properties)) {
-    if (wanted.includes(key.toLowerCase())) return value;
+    if (wanted.includes(normalize(key))) return value;
   }
   return undefined;
 }
@@ -179,10 +186,24 @@ function toPost(page: NotionPage): Post {
     slug,
     title,
     summary: readText(page, ['Summary', '요약', 'Description', '설명', 'Excerpt']),
-    category: readSelect(page, ['Category', '카테고리', '분류']),
+    category: readSelect(page, [
+      'Category',
+      '카테고리',
+      '분류',
+      '주제/카테고리',
+      '주제',
+    ]),
     tags: readMultiSelect(page, ['Tags', '태그']),
     date:
-      readDate(page, ['Date', '발행일', '날짜', 'Published', 'PublishedAt']) ??
+      readDate(page, [
+        'Date',
+        '발행일',
+        '날짜',
+        '게시날짜',
+        '게시일',
+        'Published',
+        'PublishedAt',
+      ]) ??
       page.created_time ??
       new Date().toISOString(),
     cover: readCover(page),
