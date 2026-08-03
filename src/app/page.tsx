@@ -1,6 +1,7 @@
 import { getPublishedPosts, isNotionConfigured } from '@/lib/notion';
 import PostList from '@/components/blog/PostList';
 import FeaturedPost from '@/components/blog/FeaturedPost';
+import Hero from '@/components/home/Hero';
 import Header from '@/components/common/Header';
 import Footer from '@/components/common/Footer';
 
@@ -18,6 +19,7 @@ export default async function HomePage() {
   return (
     <div className="flex min-h-[100dvh] flex-col">
       <Header />
+      <Hero />
       <main className="mx-auto w-full max-w-[760px] flex-1 px-5 py-14 md:px-8">
         {featuredPost && (
           <section className="mb-16">
@@ -33,7 +35,7 @@ export default async function HomePage() {
             posts={remainingPosts}
             emptyMessage={
               isNotionConfigured
-                ? '노션 데이터베이스에서 글의 상태를 발행으로 바꾸면 여기에 쌓입니다.'
+                ? '노션에서 글의 상태를 게시됨으로 바꾸면 여기에 쌓입니다.'
                 : 'NOTION_TOKEN과 NOTION_DATABASE_ID를 .env.local에 넣으면 노션에서 글을 읽어옵니다.'
             }
           />
