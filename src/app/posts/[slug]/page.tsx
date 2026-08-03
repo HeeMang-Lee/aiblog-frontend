@@ -1,17 +1,14 @@
 import { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
 import {
   getPostBySlug,
   getPostMarkdown,
   getPublishedPosts,
   getRelatedPosts,
 } from '@/lib/notion';
+import Shell from '@/components/ide/Shell';
 import MarkdownRenderer from '@/components/blog/MarkdownRenderer';
-import RecommendedPosts from '@/components/blog/RecommendedPosts';
-import Header from '@/components/common/Header';
-import Footer from '@/components/common/Footer';
+import RelatedPosts from '@/components/ide/RelatedPosts';
 import { formatDate, toISODate } from '@/lib/utils/date';
 
 export const revalidate = 900;
@@ -53,74 +50,89 @@ export default async function PostDetailPage({ params }: PageProps) {
     getRelatedPosts(post),
   ]);
 
+  const wordCount = markdown.trim() ? markdown.trim().split(/\s+/).length : 0;
+
   return (
-    <div className="flex min-h-[100dvh] flex-col">
-      <Header />
-      <main className="mx-auto w-full max-w-[760px] flex-1 px-5 py-14 md:px-8">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-[11px] tracking-[0.02em] text-meta transition-colors hover:text-ink"
-        >
-          <ArrowLeft size={13} strokeWidth={1.5} />
-          목록
-        </Link>
-
-        <article className="mt-8">
-          <header className="border-b border-rule pb-8">
-            <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] tracking-[0.02em] text-meta">
-              {post.category && <span>{post.category}</span>}
-              {post.category && (
-                <span aria-hidden className="text-rule-strong">
-                  ·
-                </span>
-              )}
-              <time
-                dateTime={toISODate(post.date)}
-                className="font-mono tnum tracking-[0.08em]"
-              >
-                {formatDate(post.date)}
-              </time>
-            </p>
-
-            <h1 className="mt-3 max-w-[24ch] text-[clamp(1.75rem,4vw,2.5rem)] font-semibold leading-[1.25] tracking-[-0.025em] text-ink">
+    <Shell
+      tab={`${post.slug}.md`}
+      command={`cat posts/${post.slug}.md`}
+      result={
+        <>
+          <span className="text-string">{wordCount}</span> words ·{' '}
+          {post.category ?? 'uncategorized'}
+        </>
+      }
+      properties={[
+        ['status', post.status === 'PUBLISHED' ? '게시됨' : '초안'],
+        ['category', post.category ?? '-'],
+        ['date', toISODate(post.date) || '-'],
+        ['tags', post.tags.length ? post.tags.join(', ') : '-'],
+      ]}
+    >
+      <article className="px-4 py-8 md:px-6 md:py-10">
+        <header className="border-b border-rule pb-6">
+          <div className="flex gap-4">
+            <span className="w-6 shrink-0 select-none pt-2 text-right font-mono text-[11px] text-gutter">
+              1
+            </span>
+            <h1 className="max-w-[24ch] text-[clamp(1.6rem,3.6vw,2.15rem)] font-semibold leading-[1.3] tracking-[-0.025em] text-ink">
+              <span className="font-mono text-keyword"># </span>
               {post.title}
             </h1>
+          </div>
 
-            {post.summary && (
-              <p className="mt-4 max-w-[68ch] text-[16px] leading-[1.7] text-body">
+          <div className="mt-3 flex gap-4">
+            <span className="w-6 shrink-0 select-none text-right font-mono text-[11px] text-gutter">
+              2
+            </span>
+            <p className="flex flex-wrap items-center gap-x-3 font-mono text-[11px] text-meta">
+              <time dateTime={toISODate(post.date)} className="tnum">
+                {formatDate(post.date)}
+              </time>
+              {post.category && <span className="text-string">{post.category}</span>}
+              {post.tags.map((tag) => (
+                <span key={tag} className="text-gutter">
+                  #{tag}
+                </span>
+              ))}
+            </p>
+          </div>
+
+          {post.summary && (
+            <div className="mt-3 flex gap-4">
+              <span className="w-6 shrink-0 select-none text-right font-mono text-[11px] text-gutter">
+                3
+              </span>
+              <p className="max-w-[68ch] text-[14px] leading-[1.7] text-body">
                 {post.summary}
               </p>
-            )}
-
-            {post.tags.length > 0 && (
-              <p className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-[11px] tracking-[0.02em] text-meta">
-                {post.tags.map((tag) => (
-                  <span key={tag}>{tag}</span>
-                ))}
-              </p>
-            )}
-          </header>
-
-          {post.cover && (
-            <img
-              src={post.cover}
-              alt=""
-              className="mt-10 w-full rounded-xs border border-rule object-cover"
-            />
+            </div>
           )}
+        </header>
 
-          <div className="mt-10">
-            {markdown ? (
-              <MarkdownRenderer content={markdown} />
-            ) : (
-              <p className="text-[15px] text-meta">본문이 비어 있습니다.</p>
-            )}
-          </div>
-        </article>
+        {post.cover && (
+          <img
+            src={post.cover}
+            alt=""
+            className="mt-8 w-full rounded-xs border border-rule object-cover"
+          />
+        )}
 
-        <RecommendedPosts posts={related} />
-      </main>
-      <Footer />
-    </div>
+        {/* The article itself is prose, not source. The editor language stays
+            in the chrome so the reading experience is not sacrificed to it. */}
+        <div className="mt-8">
+          {markdown ? (
+            <MarkdownRenderer content={markdown} />
+          ) : (
+            <p className="text-[14px] text-meta">
+              <span className="font-mono">{'// '}</span>
+              본문이 비어 있습니다
+            </p>
+          )}
+        </div>
+      </article>
+
+      <RelatedPosts posts={related} />
+    </Shell>
   );
 }

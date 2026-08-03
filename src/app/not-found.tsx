@@ -1,24 +1,39 @@
 import Link from 'next/link';
 
+/**
+ * Deliberately outside the editor shell: the shell's explorer needs a Notion
+ * round trip, and a 404 should not depend on a network call that may itself
+ * be the reason the page is missing.
+ */
 export default function NotFound() {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center px-5">
-      <div className="w-full max-w-[760px]">
-        <p className="font-mono tnum text-[11px] tracking-[0.08em] text-meta">
-          404
-        </p>
-        <h1 className="mt-3 text-[22px] font-semibold tracking-[-0.02em] text-ink">
-          페이지를 찾을 수 없습니다
-        </h1>
-        <p className="mt-2 text-[15px] text-body">
-          주소가 바뀌었거나 글이 삭제됐을 수 있습니다.
-        </p>
-        <Link
-          href="/"
-          className="mt-8 inline-block rounded-xs bg-ink px-5 py-2.5 text-[13px] font-medium tracking-[0.02em] text-paper transition-colors hover:bg-accent-hover"
-        >
-          글 목록으로
-        </Link>
+    <div className="flex min-h-[100dvh] items-center justify-center bg-bg px-5">
+      <div className="w-full max-w-[560px] overflow-hidden rounded-xs border border-rule">
+        <div className="flex h-9 items-center border-b border-rule bg-panel px-3">
+          <p className="flex-1 text-center font-mono text-[11px] text-meta">
+            404
+          </p>
+        </div>
+
+        <div className="bg-editor px-5 py-8">
+          <p className="font-mono text-[13px] leading-[1.8] text-meta">
+            <span className="text-accent">$</span> cat {'<'}requested{'>'}
+          </p>
+          <p className="mt-1 font-mono text-[13px] leading-[1.8] text-string">
+            No such file or directory
+          </p>
+
+          <p className="mt-6 text-[14px] leading-[1.7] text-body">
+            주소가 바뀌었거나 글이 삭제됐을 수 있습니다.
+          </p>
+
+          <Link
+            href="/"
+            className="mt-6 inline-block rounded-xs bg-accent-soft px-3.5 py-2 font-mono text-[12px] text-accent transition-colors hover:text-ink"
+          >
+            cd ~
+          </Link>
+        </div>
       </div>
     </div>
   );

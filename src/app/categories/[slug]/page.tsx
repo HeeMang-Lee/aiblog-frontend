@@ -1,9 +1,8 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getCategories, getPostsByCategorySlug } from '@/lib/notion';
-import PostList from '@/components/blog/PostList';
-import Header from '@/components/common/Header';
-import Footer from '@/components/common/Footer';
+import Shell from '@/components/ide/Shell';
+import PostRows from '@/components/ide/PostRows';
 
 export const revalidate = 900;
 
@@ -33,25 +32,36 @@ export default async function CategoryPage({ params }: PageProps) {
   if (!category) notFound();
 
   return (
-    <div className="flex min-h-[100dvh] flex-col">
-      <Header />
-      <main className="mx-auto w-full max-w-[760px] flex-1 px-5 py-14 md:px-8">
-        {/* One stacked block, not a headline with a floating explainer. */}
-        <div className="mb-10">
+    <Shell
+      tab={`categories/${category.slug}`}
+      command={`blog --list --category="${category.name}"`}
+      result={
+        <>
+          <span className="text-string">{posts.length}</span> posts
+        </>
+      }
+      properties={[
+        ['category', category.name],
+        ['posts', String(category.count)],
+        ['slug', category.slug],
+      ]}
+    >
+      <div className="border-b border-rule px-4 py-6 md:px-6">
+        <div className="flex gap-4">
+          <span className="w-6 shrink-0 select-none text-right font-mono text-[11px] text-gutter">
+            1
+          </span>
           <h1 className="text-[22px] font-semibold leading-[1.3] tracking-[-0.02em] text-ink">
+            <span className="font-mono text-keyword"># </span>
             {category.name}
           </h1>
-          <p className="mt-3 font-mono tnum text-[11px] tracking-[0.08em] text-meta">
-            글 {category.count}
-          </p>
         </div>
+      </div>
 
-        <PostList
-          posts={posts}
-          emptyMessage="이 카테고리에 발행된 글이 아직 없습니다."
-        />
-      </main>
-      <Footer />
-    </div>
+      <PostRows
+        posts={posts}
+        emptyMessage="이 카테고리에 발행된 글이 아직 없습니다"
+      />
+    </Shell>
   );
 }
