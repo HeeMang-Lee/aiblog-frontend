@@ -20,6 +20,9 @@
   --accent-soft: rgba(21, 128, 61, 0.1);
   --keyword: #6d28d9;
   --string: #a15c07;
+  /* 코드 주석. --gutter 는 줄 번호용이라 대비가 2.3:1 밖에 안 되는데,
+     주석은 장식이 아니라 읽어야 하는 내용이라 따로 둔다. 5.63:1. */
+  --comment: #5f685e;
   --selection: rgba(21, 128, 61, 0.16);
 
   /* Window controls. The one place other hues are allowed: these three dots
@@ -43,6 +46,8 @@
   --accent-soft: rgba(74, 222, 128, 0.12);
   --keyword: #7dd3fc;
   --string: #d8b96a;
+  /* 편집면(#0a0d0b) 위에서 4.80:1. --gutter 였을 때는 1.97:1 이었다. */
+  --comment: #728275;
   --selection: rgba(74, 222, 128, 0.22);
   --win-close: #ff5f57;
   --win-min: #febc2e;
@@ -62,13 +67,17 @@
   --color-accent-soft: var(--accent-soft);
   --color-keyword: var(--keyword);
   --color-string: var(--string);
+  --color-comment: var(--comment);
   --color-win-close: var(--win-close);
   --color-win-min: var(--win-min);
   --color-win-max: var(--win-max);
 
   --font-sans: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic",
     sans-serif;
-  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  /* 한글 대체를 명시한다. Plex Mono 에는 한글 글립이 없어서, 코드 블록 안의
+     한글 주석이 지정하지 않으면 아무 시스템 폰트로 떨어진다. 라틴과 숫자는
+     그대로 Mono 로 나가고 한글만 본문 서체를 빌린다. */
+  --font-mono: var(--font-plex-mono), "IBM Plex Sans KR", ui-monospace, monospace;
 
   /* Shape lock: an editor has square panels. */
   --radius-none: 0;
@@ -80,6 +89,12 @@
   --radius-2xl: 2px;
   --radius-3xl: 2px;
   --radius-full: 2px;
+}
+
+/* 모양 잠금. @theme inline 의 --radius-* 는 유틸리티에 인라인되어 CSS 변수로
+   나오지 않으므로, 손으로 쓰는 규칙이 참조할 값을 따로 둔다. 테마와 무관하다. */
+:root {
+  --radius: 2px;
 }
 
 body {
@@ -142,14 +157,16 @@ html {
 }
 
 .prose :where(h2) {
-  font-size: 1.375rem;
+  /* DESIGN.md typography.heading */
+  font-size: 22px;
   margin-top: 2.5em;
   padding-top: 1.15em;
   border-top: 1px solid var(--rule);
 }
 
 .prose :where(h3) {
-  font-size: 1.125rem;
+  /* DESIGN.md typography.article-h3 */
+  font-size: 18px;
   margin-top: 2em;
 }
 
@@ -173,13 +190,131 @@ html {
   content: none;
 }
 
-.prose :where(pre) {
+/* ---------------------------------------------------------------------------
+   Code blocks. 이 사이트의 껍데기가 에디터이므로 코드 블록도 에디터 판으로
+   보여야 한다. 언어 이름을 단 머리띠 + 코드 면 두 층이다.
+   --------------------------------------------------------------------------- */
+.code-block {
+  margin: 1.7em 0;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.code-block__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+  background: var(--panel);
+  border-bottom: 1px solid var(--rule);
+  padding: 0.5em 1.2em;
+}
+
+/* DESIGN.md typography.chrome */
+.code-block__lang {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--meta);
+}
+
+.prose :where(.code-block pre) {
+  /* DESIGN.md typography.code */
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.7;
-  border: 1px solid var(--rule);
-  border-radius: 2px;
+  background: var(--editor);
+  color: var(--body);
+  border: 0;
+  border-radius: 0;
+  margin: 0;
   padding: 1.1em 1.2em;
+  /* 긴 줄은 접지 않고 가로로 흘린다. 코드는 줄바꿈 위치가 의미다. */
+  overflow-x: auto;
+}
+
+/* ---------------------------------------------------------------------------
+   Syntax highlighting. rehype-highlight 가 hljs-* 클래스를 붙이지만 테마 CSS 가
+   없으면 전부 같은 색으로 나온다. 새 색을 들이지 않고 이미 있는 토큰
+   (--keyword, --string, --accent, --meta, --gutter)에만 매핑한다.
+   그래서 라이트/다크가 자동으로 따라온다.
+   --------------------------------------------------------------------------- */
+.hljs {
+  background: transparent;
+  color: var(--body);
+}
+
+.hljs-comment,
+.hljs-quote {
+  color: var(--comment);
+  font-style: italic;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-built_in,
+.hljs-type,
+.hljs-name,
+.hljs-tag {
+  color: var(--keyword);
+}
+
+.hljs-string,
+.hljs-regexp,
+.hljs-char,
+.hljs-number,
+.hljs-meta .hljs-string,
+.hljs-template-tag {
+  color: var(--string);
+}
+
+.hljs-title,
+.hljs-section,
+.hljs-title.class_,
+.hljs-title.function_,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link {
+  color: var(--accent);
+}
+
+.hljs-attr,
+.hljs-attribute,
+.hljs-property,
+.hljs-variable,
+.hljs-params,
+.hljs-template-variable,
+.hljs-selector-attr,
+.hljs-selector-class,
+.hljs-selector-id {
+  color: var(--ink);
+}
+
+.hljs-meta,
+.hljs-doctag,
+.hljs-punctuation,
+.hljs-operator {
+  color: var(--meta);
+}
+
+/* diff. 창 제어 점과 같은 이유로 여기만 다른 색조를 허용한다 - 추가와 삭제는
+   색으로 읽는 관습이고 장식이 아니다. */
+.hljs-addition {
+  color: var(--win-max);
+}
+
+.hljs-deletion {
+  color: var(--win-close);
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: 600;
 }
 
 .prose :where(blockquote) {
@@ -195,7 +330,7 @@ html {
 }
 
 .prose :where(img) {
-  border-radius: 2px;
+  border-radius: var(--radius);
   border: 1px solid var(--rule);
 }
 
