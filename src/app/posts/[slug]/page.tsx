@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import {
@@ -117,10 +118,17 @@ export default async function PostDetailPage({ params }: PageProps) {
         </header>
 
         {post.cover && (
-          <img
+          /* 원본 비율을 그대로 두려고 width/height 는 비율 힌트로만 준다.
+             불러온 뒤에는 h-auto 가 실제 비율을 따르므로 잘리지 않는다.
+             next/image 를 쓰면 최적화본이 우리 쪽에 캐시돼서, 한 시간이면
+             만료되는 노션 S3 링크가 끊겨도 이미 받아 둔 그림이 남는다. */
+          <Image
             src={post.cover}
             alt=""
-            className="mt-8 w-full rounded-xs border border-rule object-cover"
+            width={1600}
+            height={900}
+            sizes="(max-width: 768px) 100vw, 800px"
+            className="mt-8 h-auto w-full rounded-xs border border-rule"
           />
         )}
 

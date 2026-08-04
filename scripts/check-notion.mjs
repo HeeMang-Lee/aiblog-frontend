@@ -185,7 +185,11 @@ const hasTitle = properties.some(([, v]) => v.type === 'title');
 const has = (...candidates) => candidates.some((c) => names.includes(normalize(c)));
 
 console.log('');
-hasTitle ? ok('제목 속성 있음') : fail('제목(title) 속성이 없습니다.');
+if (hasTitle) {
+  ok('제목 속성 있음');
+} else {
+  fail('제목(title) 속성이 없습니다.');
+}
 
 if (has('Status', '상태')) {
   ok('상태 속성 있음');
@@ -200,9 +204,11 @@ for (const [label, candidates] of [
   ['발행일', ['Date', '발행일', '날짜', '게시날짜', '게시일', 'Published', 'PublishedAt']],
   ['태그', ['Tags', '태그']],
 ]) {
-  has(...candidates)
-    ? ok(`${label} 속성 있음`)
-    : console.log(`${DIM}  생략  ${label} 속성 없음 (선택 사항)${RESET}`);
+  if (has(...candidates)) {
+    ok(`${label} 속성 있음`);
+  } else {
+    console.log(`${DIM}  생략  ${label} 속성 없음 (선택 사항)${RESET}`);
+  }
 }
 
 /* 6. 실제 글 -------------------------------------------------------- */

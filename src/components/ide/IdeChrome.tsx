@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Menu, Moon, Sun, X } from 'lucide-react';
 import { Category, Post } from '@/types/post';
 import { useTheme } from '@/components/common/ThemeProvider';
@@ -34,7 +34,15 @@ export default function IdeChrome({
 
   // Navigating on a phone should close the drawer, otherwise the article
   // opens behind a panel that is still covering it.
-  useEffect(() => setDrawerOpen(false), [pathname]);
+  //
+  // 렌더 중에 맞추고 effect 를 쓰지 않는다. effect 로 닫으면 이미 가려진
+  // 화면을 한 번 그린 뒤에야 닫혀서 깜빡인다. 이전 경로를 상태로 들고
+  // 있다가 달라진 순간 되돌리는 방식이라 뒤로가기에도 똑같이 동작한다.
+  const [lastPath, setLastPath] = useState(pathname);
+  if (pathname !== lastPath) {
+    setLastPath(pathname);
+    setDrawerOpen(false);
+  }
 
   const isActive = (href: string) => pathname === href;
 
