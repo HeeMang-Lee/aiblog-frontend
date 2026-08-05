@@ -11,7 +11,8 @@ import Shell from '@/components/ide/Shell';
 import MarkdownRenderer from '@/components/blog/MarkdownRenderer';
 import RelatedPosts from '@/components/ide/RelatedPosts';
 import { formatDate, toISODate } from '@/lib/utils/date';
-import { countWords } from '@/lib/utils/words';
+import { countWords, excerpt } from '@/lib/utils/words';
+import { postUrl, siteName, siteUrl } from '@/lib/site';
 
 export const revalidate = 900;
 
@@ -27,17 +28,36 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPostBySlug(slug);
-  if (!post) return { title: '글을 찾을 수 없습니다' };
+  if (!post) return { title: '글을 찾을 수 없습니다', robots: { index: false } };
+
+  // 노션의 요약 속성이 비어 있으면 본문에서 뽑는다. 설명이 아예 없으면
+  // 구글이 본문에서 제멋대로 잘라 쓴다.
+  const markdown = await getPostMarkdown(post.id);
+  const description = post.summary || excerpt(markdown);
+  const url = postUrl(post.slug);
 
   return {
     title: post.title,
-    description: post.summary || undefined,
+    description,
+    alternates: { canonical: url },
     openGraph: {
       title: post.title,
-      description: post.summary || undefined,
+      description,
       type: 'article',
+      url,
+      siteName,
+      locale: 'ko_KR',
       publishedTime: post.date,
-      images: post.cover ? [post.cover] : [],
+      modifiedTime: post.date,
+      tags: post.tags,
+      // 커버는 넣지 않는다. 노션이 주는 S3 링크는 한 시간이면 만료돼서
+      // 공유 썸네일이 나중에 깨진다. opengraph-image.tsx 가 만료되지 않는
+      // 이미지를 대신 만든다.
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description,
     },
   };
 }
@@ -56,7 +76,35 @@ export default async function PostDetailPage({ params }: PageProps) {
   // 1,700자씩이라 분량의 대부분을 차지한다. countWords 가 걷어낸다.
   const wordCount = countWords(markdown);
 
+  // 구조화 데이터. 검색 결과에 날짜와 작성자가 붙는 자리이고, 이게 없으면
+  // 구글이 제목과 본문만으로 추측한다. 화면에 보이는 값과 어긋나면 안 되므로
+  // 전부 같은 post 에서 가져온다.
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: post.title,
+    description: post.summary || excerpt(markdown),
+    datePublished: post.date,
+    dateModified: post.date,
+    inLanguage: 'ko-KR',
+    author: { '@type': 'Person', name: '이희망', url: siteUrl },
+    publisher: { '@type': 'Person', name: '이희망', url: siteUrl },
+    mainEntityOfPage: { '@type': 'WebPage', '@id': postUrl(post.slug) },
+    url: postUrl(post.slug),
+    keywords: post.tags.join(', '),
+    articleSection: post.category ?? undefined,
+    wordCount,
+  };
+
   return (
+    <>
+      {/* 구조화 데이터는 화면에 그리지 않는다. dangerouslySetInnerHTML 을
+          쓰는 이유는 JSON 안의 따옴표가 이스케이프되지 않아야 하기 때문이고,
+          내용이 전부 우리 데이터라 주입 경로가 없다. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
     <Shell
       tab={`${post.slug}.md`}
       slug={post.slug}
@@ -146,5 +194,6 @@ export default async function PostDetailPage({ params }: PageProps) {
 
       <RelatedPosts posts={related} />
     </Shell>
+    </>
   );
 }

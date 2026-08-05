@@ -42,6 +42,36 @@ const n2m = notion
   : null;
 
 /**
+ * Notion labels every uploaded image `image.png`, and that string ends up as
+ * the alt text. A filename tells a screen reader nothing and tells a search
+ * engine less, so the caption is used when there is one and the image is
+ * marked decorative when there is not.
+ *
+ * 노션에서 이미지 아래에 캡션을 쓰면 그게 대체 텍스트가 된다. 캡션이 없으면
+ * 빈 alt 로 두는 편이 낫다 - 파일명을 읽어 주는 것은 낭독기 사용자에게
+ * 소음이고, 검색엔진에도 신호가 되지 않는다.
+ */
+n2m?.setCustomTransformer('image', async (block) => {
+  const image = (block as { image?: {
+    type?: string;
+    external?: { url?: string };
+    file?: { url?: string };
+    caption?: { plain_text?: string }[];
+  } }).image;
+  if (!image) return false;
+
+  const url = image.external?.url ?? image.file?.url;
+  if (!url) return '';
+
+  const caption = (image.caption ?? [])
+    .map((c) => c.plain_text ?? '')
+    .join('')
+    .trim();
+
+  return `![${caption}](${url})`;
+});
+
+/**
  * Notion API 2025-09-03 split databases into data sources, and SDK v5 dropped
  * `databases.query` entirely. A database id must be resolved to its first data
  * source id before it can be queried.

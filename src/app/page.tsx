@@ -1,4 +1,6 @@
+import type { Metadata } from 'next';
 import { getCategories, getPublishedPosts, isNotionConfigured } from '@/lib/notion';
+import { siteDescription, siteUrl } from '@/lib/site';
 import { toISODate } from '@/lib/utils/date';
 import Shell from '@/components/ide/Shell';
 import PostRows from '@/components/ide/PostRows';
@@ -8,6 +10,14 @@ import PostRows from '@/components/ide/PostRows';
  * hour, so pages are rebuilt well inside that window.
  */
 export const revalidate = 900;
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: siteUrl,
+    types: { 'application/rss+xml': `${siteUrl}/feed.xml` },
+  },
+  description: siteDescription,
+};
 
 export default async function HomePage() {
   const [posts, categories] = await Promise.all([

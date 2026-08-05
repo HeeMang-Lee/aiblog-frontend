@@ -15,6 +15,9 @@ colors:
   keyword: "#6D28D9"
   string: "#A15C07"
   comment: "#5F685E"
+  win-close: "#EC6A5E"
+  win-min: "#F3BF4F"
+  win-max: "#61C454"
   bg-dark: "#080A09"
   panel-dark: "#0D100E"
   editor-dark: "#0A0D0B"
@@ -28,6 +31,9 @@ colors:
   keyword-dark: "#7DD3FC"
   string-dark: "#D8B96A"
   comment-dark: "#728275"
+  win-close-dark: "#FF5F57"
+  win-min-dark: "#FEBC2E"
+  win-max-dark: "#28C840"
 typography:
   display:
     fontFamily: "'IBM Plex Sans KR', 'Apple SD Gothic Neo', sans-serif"

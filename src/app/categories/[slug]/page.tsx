@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getCategories, getPostsByCategorySlug } from '@/lib/notion';
+import { categoryUrl } from '@/lib/site';
 import Shell from '@/components/ide/Shell';
 import PostRows from '@/components/ide/PostRows';
 
@@ -18,11 +19,20 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const { category } = await getPostsByCategorySlug(slug);
-  if (!category) return { title: '카테고리를 찾을 수 없습니다' };
+  if (!category) return { title: '카테고리를 찾을 수 없습니다', robots: { index: false } };
+
+  const description = `${category.name} 카테고리의 글 목록`;
 
   return {
     title: category.name,
-    description: `${category.name} 카테고리의 글 목록`,
+    description,
+    alternates: { canonical: categoryUrl(category.slug) },
+    openGraph: {
+      title: category.name,
+      description,
+      url: categoryUrl(category.slug),
+      type: 'website',
+    },
   };
 }
 
