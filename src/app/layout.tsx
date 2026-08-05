@@ -6,7 +6,7 @@ import "./globals.css";
 // uses) serves this family without its Hangul ranges, so the Korean chunks are
 // vendored under public/fonts/plex-kr and declared here by unicode-range.
 import "./fonts/plex-kr.css";
-import { siteDescription, siteName, siteUrl } from "@/lib/site";
+import { siteDescription, siteName, siteUrl, verification } from "@/lib/site";
 
 const plexMono = IBM_Plex_Mono({
   subsets: ["latin"],
@@ -37,6 +37,7 @@ export const metadata: Metadata = {
     // 카드 이미지를 크게 띄운다. opengraph-image 가 1200x630 을 만든다.
     card: "summary_large_image",
   },
+  verification,
   robots: {
     index: true,
     follow: true,

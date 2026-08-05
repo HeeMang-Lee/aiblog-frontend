@@ -26,3 +26,22 @@ export function postUrl(slug: string): string {
 export function categoryUrl(slug: string): string {
   return `${siteUrl}/categories/${encodeURIComponent(slug)}`;
 }
+
+/**
+ * 검색엔진 소유권 확인 토큰. HTML 에 그대로 나가는 공개 값이라 환경변수로
+ * 숨길 이유가 없다.
+ *
+ * 루트 레이아웃에서만 쓴다. Next 는 이 필드를 루트 metadata 에서만 내보내고
+ * 하위 라우트에 같이 넣어도 무시한다. 확인해 봤고, 그래도 상관없다 -
+ * 서치 콘솔과 네이버는 등록한 주소(여기서는 루트)만 가져가서 태그를 찾는다.
+ * 하위 페이지에 있어 봐야 아무도 읽지 않는다.
+ *
+ * 네이버를 같이 두는 이유: 한국어 기술 검색은 네이버 유입 비중이 낮지 않다.
+ * 구글만 등록하면 절반을 버린다.
+ */
+export const verification = {
+  google: 'XeehbOS3PH51puL9wHS8bLGbbpMjd48OciJ51QwbXkg',
+  other: {
+    'naver-site-verification': '36856108e951971915e309ca707ca959e3e2b61d',
+  },
+};
