@@ -11,6 +11,7 @@ import Shell from '@/components/ide/Shell';
 import MarkdownRenderer from '@/components/blog/MarkdownRenderer';
 import RelatedPosts from '@/components/ide/RelatedPosts';
 import { formatDate, toISODate } from '@/lib/utils/date';
+import { countWords } from '@/lib/utils/words';
 
 export const revalidate = 900;
 
@@ -51,11 +52,9 @@ export default async function PostDetailPage({ params }: PageProps) {
     getRelatedPosts(post),
   ]);
 
-  const wordCount = markdown.trim() ? markdown.trim().split(/\s+/).length : 0;
-  // 한국어 성인 평균 묵독 속도는 분당 500~600자 근처다. 공백 기준 어절이
-  // 아니라 글자 수로 재야 한글에서 값이 맞는다.
-  const charCount = markdown.replace(/\s/g, '').length;
-  const readingMinutes = charCount ? Math.max(1, Math.round(charCount / 500)) : 0;
+  // 마크다운 원문을 그대로 세면 안 된다. 노션의 이미지 주소가 한 장에
+  // 1,700자씩이라 분량의 대부분을 차지한다. countWords 가 걷어낸다.
+  const wordCount = countWords(markdown);
 
   return (
     <Shell
@@ -73,7 +72,6 @@ export default async function PostDetailPage({ params }: PageProps) {
         ['category', post.category ?? '-'],
         ['date', toISODate(post.date) || '-'],
         ['tags', post.tags.length ? post.tags.join(', ') : '-'],
-        ['reading', readingMinutes ? `${readingMinutes} min` : '-'],
       ]}
     >
       <article className="px-4 py-8 md:px-6 md:py-10">
