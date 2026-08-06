@@ -334,6 +334,26 @@ html {
   border: 1px solid var(--rule);
 }
 
+/* 그림과 캡션은 한 덩어리다. 캡션이 본문 문단처럼 보이면 그림과 끊긴다. */
+.figure {
+  margin: 2em 0;
+}
+
+.figure :where(img) {
+  display: block;
+  width: 100%;
+}
+
+/* DESIGN.md typography.ui. 본문(16px)보다 한 단 작아야 본문과 구분된다. */
+.figure figcaption {
+  margin-top: 0.75em;
+  padding-left: 0.9em;
+  border-left: 1px solid var(--rule-strong);
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--meta);
+}
+
 .prose :where(table) {
   font-size: 13px;
 }
