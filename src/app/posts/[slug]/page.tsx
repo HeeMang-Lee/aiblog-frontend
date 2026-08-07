@@ -122,7 +122,9 @@ export default async function PostDetailPage({ params }: PageProps) {
         ['tags', post.tags.length ? post.tags.join(', ') : '-'],
       ]}
     >
-      <article className="px-4 py-8 md:px-6 md:py-10">
+      {/* 셸이 화면을 꽉 채우면 편집기 칸이 본문보다 훨씬 넓어진다. 글 기둥을
+          가운데로 두지 않으면 오른쪽이 통째로 비어 한쪽으로 쏠려 보인다. */}
+      <article className="mx-auto w-full max-w-[92ch] px-4 py-8 md:px-6 md:py-10">
         <header className="border-b border-rule pb-6">
           <div className="flex gap-4">
             <span className="w-6 shrink-0 select-none pt-2 text-right font-mono text-[11px] text-gutter">
