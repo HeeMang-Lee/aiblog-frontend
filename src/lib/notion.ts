@@ -308,6 +308,36 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   return posts.find((post) => post.slug === decoded) ?? null;
 }
 
+/* ------------------------------------------------------------------------- */
+
+/**
+ * The set of slugs that name a published post.
+ *
+ * The visit counter checks the slug it is handed against this before making a
+ * key out of it. That check runs on a dynamic route, so the list is memoised
+ * for the same window the pages use - otherwise every counted visit would page
+ * through the whole database again.
+ */
+const SLUGS_TTL_MS = 15 * 60 * 1000;
+
+let slugCache: { at: number; slugs: Set<string> } | null = null;
+
+export async function getPublishedSlugs(): Promise<Set<string> | null> {
+  const now = Date.now();
+  if (slugCache && now - slugCache.at < SLUGS_TTL_MS) return slugCache.slugs;
+
+  const posts = await getPublishedPosts();
+
+  // 노션이 실패하면 getAllPosts 가 빈 배열을 돌려준다. 그걸 목록으로 굳히면
+  // 멀쩡한 slug 까지 전부 막히므로, 캐시를 갱신하지 않고 지난 값을 그대로
+  // 쓴다. 지난 값도 없으면 null 을 주고 호출한 쪽이 판단하게 둔다.
+  if (posts.length === 0) return slugCache?.slugs ?? null;
+
+  const slugs = new Set(posts.map((post) => post.slug));
+  slugCache = { at: now, slugs };
+  return slugs;
+}
+
 export async function getCategories(): Promise<Category[]> {
   const posts = await getPublishedPosts();
   const counts = new Map<string, number>();
