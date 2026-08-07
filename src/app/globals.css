@@ -145,7 +145,10 @@ html {
   --tw-prose-th-borders: var(--rule-strong);
   --tw-prose-td-borders: var(--rule);
 
-  max-width: 68ch;
+  /* ch 는 숫자 0 의 폭이라 한글은 그 두 배를 차지한다. 68ch 는 한글로 세면
+     한 줄에 37자뿐이라 좁게 읽힌다. 90ch 면 49자로, 한글 본문에서 편한
+     범위에 들어온다. */
+  max-width: 90ch;
   font-size: 16px;
   line-height: 1.8;
   letter-spacing: -0.005em;
