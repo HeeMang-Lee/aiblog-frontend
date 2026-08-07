@@ -33,29 +33,29 @@ export default async function Shell({
   ]);
 
   return (
-    <div className="min-h-[100dvh] bg-bg p-0 md:p-6">
-      <div className="mx-auto flex min-h-[100dvh] max-w-[1240px] flex-col overflow-hidden border-rule md:h-[calc(100dvh-48px)] md:min-h-0 md:rounded-xs md:border">
-        <IdeChrome
-          posts={posts}
-          categories={categories}
-          tab={tab}
-          editor={
-            <main className="min-w-0 flex-1 overflow-y-auto bg-editor">
-              {children}
-            </main>
-          }
-          panel={<SidePanel properties={properties} slug={slug} />}
-        />
+    /* 화면을 꽉 채운다. 바깥 여백과 폭 상한을 두면 에디터가 떠 있는 창처럼
+       보이고, 그만큼 본문 폭이 깎여서 읽는 자리가 좁아진다. */
+    <div className="flex min-h-[100dvh] flex-col overflow-hidden bg-bg md:h-[100dvh] md:min-h-0">
+      <IdeChrome
+        posts={posts}
+        categories={categories}
+        tab={tab}
+        editor={
+          <main className="min-w-0 flex-1 overflow-y-auto bg-editor">
+            {children}
+          </main>
+        }
+        panel={<SidePanel properties={properties} slug={slug} />}
+      />
 
-        {/* Terminal bar */}
-        <div className="border-t border-rule bg-panel px-4 py-2.5">
-          <p className="font-mono text-[11px] leading-[1.6] text-meta">
-            <span className="text-accent">$</span> {command}
-          </p>
-          <p className="mt-0.5 font-mono text-[11px] leading-[1.6] text-meta">
-            {result}
-          </p>
-        </div>
+      {/* Terminal bar */}
+      <div className="border-t border-rule bg-panel px-4 py-2.5">
+        <p className="font-mono text-[11px] leading-[1.6] text-meta">
+          <span className="text-accent">$</span> {command}
+        </p>
+        <p className="mt-0.5 font-mono text-[11px] leading-[1.6] text-meta">
+          {result}
+        </p>
       </div>
     </div>
   );
